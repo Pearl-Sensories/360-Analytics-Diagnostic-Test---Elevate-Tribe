@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instructor Dashboard — Diagnostic Results</title>
+<meta name="robots" content="noindex, nofollow">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: #f8fafc; }
+  #admin-main { max-width: 1300px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+  .admin-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; text-align: center; }
+  .stat-card .stat-value { font-size: 1.6rem; font-weight: 800; color: #4f46e5; }
+  .stat-card .stat-label { font-size: 0.78rem; color: #64748b; font-weight: 600; }
+  .admin-table-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.9rem; overflow-x: auto; padding: 0.5rem; }
+  table.admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; white-space: nowrap; }
+  table.admin-table th { position: sticky; top: 0; background: #f1f5f9; text-align: left; padding: 0.6rem 0.75rem; font-size: 0.72rem; text-transform: uppercase; color: #64748b; cursor: pointer; }
+  table.admin-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid #f1f5f9; }
+  table.admin-table tr:hover td { background: #f8fafc; }
+  .tier-chip { font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px; }
+  .tier-Mastery, .tier-Proficient { background: #dcfce7; color: #166534; }
+  .tier-Developing { background: #fef3c7; color: #92400e; }
+  .tier-Beginner { background: #fee2e2; color: #991b1b; }
+  #empty-state, #loading-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+  .chart-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; height: 320px; }
+  input#search-box { padding: 0.5rem 0.9rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.9rem; min-width: 220px; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <i class="fa-solid fa-chalkboard-user"></i>
+      <div>
+        <p class="brand-title">Instructor Dashboard</p>
+        <p class="brand-subtitle">All Diagnostic Test Submissions</p>
+      </div>
+    </div>
+    <a href="index.html" class="btn btn-secondary"><i class="fa-solid fa-arrow-left mr-2"></i>Back to Test</a>
+  </div>
+</header>
+
+<main id="admin-main">
+
+  <div class="admin-header">
+    <div>
+      <input type="text" id="search-box" placeholder="Search by name, email, or location...">
+    </div>
+    <div class="flex gap-3">
+      <button id="btn-refresh" class="btn btn-secondary"><i class="fa-solid fa-rotate mr-2"></i>Refresh</button>
+      <button id="btn-export-csv" class="btn btn-primary"><i class="fa-solid fa-file-csv mr-2"></i>Export CSV</button>
+    </div>
+  </div>
+
+  <div id="loading-state"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading submissions...</div>
+  <div id="empty-state" class="hidden">
+    <i class="fa-solid fa-inbox text-4xl mb-3"></i>
+    <p>No submissions yet. Once students complete the diagnostic test on the <strong>published</strong> site, their results will appear here automatically.</p>
+  </div>
+
+  <div id="dashboard-content" class="hidden">
+    <div class="stat-cards">
+      <div class="stat-card"><p class="stat-value" id="stat-count">0</p><p class="stat-label">Submissions</p></div>
+      <div class="stat-card"><p class="stat-value" id="stat-avg-overall">0%</p><p class="stat-label">Avg. Overall Score</p></div>
+      <div class="stat-card"><p class="stat-value" id="stat-avg-excel">0%</p><p class="stat-label">Avg. Excel</p></div>
+      <div class="stat-card"><p class="stat-value" id="stat-avg-sql">0%</p><p class="stat-label">Avg. SQL</p></div>
+      <div class="stat-card"><p class="stat-value" id="stat-avg-python">0%</p><p class="stat-label">Avg. Python</p></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-box"><canvas id="chart-tool-averages"></canvas></div>
+      <div class="chart-box"><canvas id="chart-tier-distribution"></canvas></div>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="admin-table">
+        <thead>
+          <tr>
+            <th data-key="student_name">Name</th>
+            <th data-key="student_age">Age</th>
+            <th data-key="student_location">Location</th>
+            <th data-key="overall_pct">Overall %</th>
+            <th data-key="excel_tier">Excel</th>
+            <th data-key="sql_tier">SQL</th>
+            <th data-key="python_tier">Python</th>
+            <th data-key="powerbi_tier">Power BI</th>
+            <th data-key="submitted_at">Submitted</th>
+          </tr>
+        </thead>
+        <tbody id="admin-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+let allRows = [];
+let sortKey = "submitted_at";
+let sortDir = -1;
+let toolAvgChart = null;
+let tierChart = null;
+
+async function loadResults() {
+  document.getElementById("loading-state").classList.remove("hidden");
+  document.getElementById("dashboard-content").classList.add("hidden");
+  document.getElementById("empty-state").classList.add("hidden");
+  try {
+    const res = await fetch("tables/diagnostic_results?limit=1000&sort=-submitted_at");
+    const json = await res.json();
+    allRows = (json.data || []).filter(r => !r.deleted);
+    if (allRows.length === 0) {
+      document.getElementById("empty-state").classList.remove("hidden");
+    } else {
+      document.getElementById("dashboard-content").classList.remove("hidden");
+      renderDashboard();
+    }
+  } catch (e) {
+    console.error(e);
+    document.getElementById("empty-state").classList.remove("hidden");
+    document.getElementById("empty-state").innerHTML = `<i class="fa-solid fa-triangle-exclamation text-4xl mb-3 text-amber-500"></i><p>Could not load results. This dashboard only works on the <strong>published</strong> site (it needs the live Table API backend), not when opened locally from a downloaded file.</p>`;
+  }
+  document.getElementById("loading-state").classList.add("hidden");
+}
+
+function avg(arr, key) {
+  const vals = arr.map(r => Number(r[key]) || 0);
+  if (!vals.length) return 0;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function renderDashboard() {
+  const q = document.getElementById("search-box").value.trim().toLowerCase();
+  let rows = allRows.filter(r =>
+    !q ||
+    (r.student_name || "").toLowerCase().includes(q) ||
+    (r.student_email || "").toLowerCase().includes(q) ||
+    (r.student_location || "").toLowerCase().includes(q)
+  );
+
+  rows = rows.slice().sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey];
+    if (typeof av === "number" || typeof bv === "number") return ((av || 0) - (bv || 0)) * sortDir;
+    return String(av || "").localeCompare(String(bv || "")) * sortDir;
+  });
+
+  document.getElementById("stat-count").textContent = allRows.length;
+  document.getElementById("stat-avg-overall").textContent = avg(allRows, "overall_pct").toFixed(0) + "%";
+  document.getElementById("stat-avg-excel").textContent = avg(allRows, "excel_pct").toFixed(0) + "%";
+  document.getElementById("stat-avg-sql").textContent = avg(allRows, "sql_pct").toFixed(0) + "%";
+  document.getElementById("stat-avg-python").textContent = avg(allRows, "python_pct").toFixed(0) + "%";
+
+  const tbody = document.getElementById("admin-table-body");
+  tbody.innerHTML = "";
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    const date = r.submitted_at ? new Date(r.submitted_at).toLocaleString() : "—";
+    tr.innerHTML = `
+      <td class="font-semibold">${escapeHtml(r.student_name || "—")}</td>
+      <td>${r.student_age || "—"}</td>
+      <td>${escapeHtml(r.student_location || "—")}</td>
+      <td>${(r.overall_pct || 0).toFixed(0)}%</td>
+      <td><span class="tier-chip tier-${r.excel_tier || ""}">${r.excel_tier || "—"}</span></td>
+      <td><span class="tier-chip tier-${r.sql_tier || ""}">${r.sql_tier || "—"}</span></td>
+      <td><span class="tier-chip tier-${r.python_tier || ""}">${r.python_tier || "—"}</span></td>
+      <td><span class="tier-chip tier-${r.powerbi_tier || ""}">${r.powerbi_tier || "—"}</span></td>
+      <td>${date}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  renderCharts();
+}
+
+function escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function renderCharts() {
+  const ctx1 = document.getElementById("chart-tool-averages").getContext("2d");
+  if (toolAvgChart) toolAvgChart.destroy();
+  toolAvgChart = new Chart(ctx1, {
+    type: "bar",
+    data: {
+      labels: ["Excel", "SQL", "Python", "Power BI"],
+      datasets: [{
+        label: "Cohort Average (%)",
+        data: [avg(allRows, "excel_pct"), avg(allRows, "sql_pct"), avg(allRows, "python_pct"), avg(allRows, "powerbi_pct")],
+        backgroundColor: ["#16a34a", "#f59e0b", "#3b82f6", "#eab308"]
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false }, title: { display: true, text: "Cohort Average Score by Tool" } } }
+  });
+
+  const tierCounts = { Mastery: 0, Proficient: 0, Developing: 0, Beginner: 0 };
+  ["excel_tier", "sql_tier", "python_tier", "powerbi_tier"].forEach(key => {
+    allRows.forEach(r => { if (tierCounts[r[key]] !== undefined) tierCounts[r[key]]++; });
+  });
+  const ctx2 = document.getElementById("chart-tier-distribution").getContext("2d");
+  if (tierChart) tierChart.destroy();
+  tierChart = new Chart(ctx2, {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(tierCounts),
+      datasets: [{ data: Object.values(tierCounts), backgroundColor: ["#16a34a", "#4ade80", "#fbbf24", "#f87171"] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: "Tier Distribution (across all 4 tools)" } } }
+  });
+}
+
+function exportCsv() {
+  if (!allRows.length) return;
+  const cols = ["student_name","student_age","student_email","student_location","student_grade",
+    "total_correct","overall_pct","foundation_pct","digital_pct","excel_pct","sql_pct","python_pct","powerbi_pct","stats_pct",
+    "excel_tier","sql_tier","python_tier","powerbi_tier",
+    "self_excel","self_sql","self_python","self_powerbi","self_stats","submitted_at"];
+  const lines = [cols.join(",")];
+  allRows.forEach(r => {
+    const line = cols.map(c => {
+      let v = r[c];
+      if (c === "submitted_at" && v) v = new Date(v).toISOString();
+      v = (v === undefined || v === null) ? "" : String(v).replace(/"/g, '""');
+      return `"${v}"`;
+    }).join(",");
+    lines.push(line);
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `diagnostic_results_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("btn-refresh").addEventListener("click", loadResults);
+document.getElementById("btn-export-csv").addEventListener("click", exportCsv);
+document.getElementById("search-box").addEventListener("input", renderDashboard);
+document.querySelectorAll("#admin-table thead th").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.dataset.key;
+    if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = -1; }
+    renderDashboard();
+  });
+});
+
+loadResults();
+</script>
+
+</body>
+</html>

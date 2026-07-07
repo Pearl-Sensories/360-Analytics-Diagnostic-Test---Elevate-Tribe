@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Analytics Program — Diagnostic Placement Test</title>
+<meta name="description" content="Diagnostic placement test for the Data Analytics training program (Excel, SQL, Python, Power BI).">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============================================================= HEADER / TIMER BAR ============================================================= -->
+<header id="app-header" class="app-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <i class="fa-solid fa-chart-simple"></i>
+      <div>
+        <p class="brand-title">Data Analytics Program</p>
+        <p class="brand-subtitle">Diagnostic Placement Test</p>
+      </div>
+    </div>
+    <div id="timer-box" class="timer-box hidden">
+      <i class="fa-regular fa-clock"></i>
+      <span id="timer-display">60:00</span>
+    </div>
+  </div>
+</header>
+
+<main id="app-main">
+
+  <!-- ============================================================= WELCOME SCREEN ============================================================= -->
+  <section id="screen-welcome" class="app-screen">
+    <div class="card intro-card">
+      <i class="fa-solid fa-graduation-cap intro-icon"></i>
+      <h1 class="intro-title">Welcome to the Diagnostic Placement Test</h1>
+      <p class="intro-text">
+        This test helps your instructor understand your current knowledge across
+        <strong>Excel, SQL, Python, and Power BI</strong> — plus core math, logic and
+        statistics skills — so the program can start at exactly the right level for you.
+      </p>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <i class="fa-solid fa-list-check"></i>
+          <p><strong>60 questions</strong><br>across 7 sections</p>
+        </div>
+        <div class="info-box">
+          <i class="fa-regular fa-clock"></i>
+          <p><strong>60 minutes</strong><br>strict time limit</p>
+        </div>
+        <div class="info-box">
+          <i class="fa-solid fa-eye-slash"></i>
+          <p><strong>No answers shown</strong><br>until you submit</p>
+        </div>
+        <div class="info-box">
+          <i class="fa-solid fa-file-pdf"></i>
+          <p><strong>Save as PDF</strong><br>share with your instructor</p>
+        </div>
+      </div>
+
+      <div class="notice-box">
+        <p><i class="fa-solid fa-circle-info mr-2"></i><strong>Before you begin:</strong></p>
+        <ul>
+          <li>Find a quiet place with a stable internet connection and about 60–70 minutes free.</li>
+          <li>Do not use a calculator, search engine, or ask anyone for help — this test measures <em>your</em> current level, not your ability to search for answers. There's no penalty for not knowing something yet — that's exactly what we want to find out!</li>
+          <li>The timer starts only after you fill in your details on the next page and click "Begin Timed Test."</li>
+          <li>You can move freely between questions and sections during the test, and change your answers, until you submit or time runs out.</li>
+          <li>If you accidentally close this tab, reopen it — your progress and timer will be restored automatically (as long as you use the same browser/device).</li>
+        </ul>
+      </div>
+
+      <button id="btn-start-info" class="btn btn-primary btn-large">
+        Get Started <i class="fa-solid fa-arrow-right ml-2"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================= STUDENT INFO + SELF-ASSESSMENT SCREEN ============================================================= -->
+  <section id="screen-info" class="app-screen hidden">
+    <form id="student-info-form" class="card">
+      <h2 class="section-heading"><i class="fa-solid fa-id-card mr-2"></i>Your Details</h2>
+      <p class="section-subheading">This information is not scored. It's used only to help your instructor identify your report.</p>
+
+      <div class="form-grid">
+        <label class="form-field">
+          <span>Full Name *</span>
+          <input type="text" id="field-name" required placeholder="e.g. Ada Lovelace">
+        </label>
+        <label class="form-field">
+          <span>Age *</span>
+          <input type="number" id="field-age" required min="8" max="99" placeholder="e.g. 15">
+        </label>
+        <label class="form-field">
+          <span>Email</span>
+          <input type="email" id="field-email" placeholder="e.g. ada@example.com">
+        </label>
+        <label class="form-field">
+          <span>Country / Location</span>
+          <input type="text" id="field-location" placeholder="e.g. Lagos, Nigeria">
+        </label>
+        <label class="form-field form-field-wide">
+          <span>Grade / School Level (or "N/A")</span>
+          <input type="text" id="field-grade" placeholder="e.g. Grade 9 / High School / University Year 1">
+        </label>
+      </div>
+
+      <h2 class="section-heading mt-8"><i class="fa-solid fa-face-smile mr-2"></i>Quick Self-Assessment</h2>
+      <p class="section-subheading">This is <strong>not graded</strong> — be honest! We'll compare it to your actual results later.</p>
+
+      <div class="self-assess-grid">
+        <div class="self-assess-item" data-tool="excel">
+          <label for="self-excel"><i class="fa-solid fa-file-excel"></i> Microsoft Excel</label>
+          <input type="range" id="self-excel" min="0" max="4" step="1" value="2">
+          <p id="self-excel-label" class="self-assess-value"></p>
+        </div>
+        <div class="self-assess-item" data-tool="sql">
+          <label for="self-sql"><i class="fa-solid fa-database"></i> SQL / Databases</label>
+          <input type="range" id="self-sql" min="0" max="4" step="1" value="2">
+          <p id="self-sql-label" class="self-assess-value"></p>
+        </div>
+        <div class="self-assess-item" data-tool="python">
+          <label for="self-python"><i class="fa-brands fa-python"></i> Python</label>
+          <input type="range" id="self-python" min="0" max="4" step="1" value="2">
+          <p id="self-python-label" class="self-assess-value"></p>
+        </div>
+        <div class="self-assess-item" data-tool="powerbi">
+          <label for="self-powerbi"><i class="fa-solid fa-chart-pie"></i> Power BI</label>
+          <input type="range" id="self-powerbi" min="0" max="4" step="1" value="2">
+          <p id="self-powerbi-label" class="self-assess-value"></p>
+        </div>
+        <div class="self-assess-item" data-tool="stats">
+          <label for="self-stats"><i class="fa-solid fa-chart-line"></i> Math / Statistics</label>
+          <input type="range" id="self-stats" min="0" max="4" step="1" value="2">
+          <p id="self-stats-label" class="self-assess-value"></p>
+        </div>
+      </div>
+
+      <div class="notice-box notice-warning mt-8">
+        <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+        Clicking "Begin Timed Test" starts your <strong>60-minute countdown</strong> immediately and cannot be paused.
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-large mt-4">
+        Begin Timed Test <i class="fa-solid fa-stopwatch ml-2"></i>
+      </button>
+    </form>
+  </section>
+
+  <!-- ============================================================= TEST SCREEN ============================================================= -->
+  <section id="screen-test" class="app-screen hidden">
+    <div class="test-layout">
+
+      <!-- Sidebar: question jump grid -->
+      <aside class="test-sidebar">
+        <div class="progress-wrap">
+          <p id="progress-text" class="progress-text">0 / 60 answered</p>
+          <div class="progress-bar"><div id="progress-bar-fill" class="progress-bar-fill"></div></div>
+        </div>
+        <p class="sidebar-heading">Jump to question</p>
+        <div id="question-jump-grid" class="question-jump-grid"></div>
+        <div class="sidebar-legend">
+          <span><span class="legend-dot legend-answered"></span> Answered</span>
+          <span><span class="legend-dot legend-unanswered"></span> Unanswered</span>
+        </div>
+      </aside>
+
+      <!-- Main test content -->
+      <div id="sections-container" class="test-content"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================= REVIEW SCREEN ============================================================= -->
+  <section id="screen-review" class="app-screen hidden">
+    <div class="card">
+      <h2 class="section-heading"><i class="fa-solid fa-clipboard-check mr-2"></i>Review Before You Submit</h2>
+      <p class="section-subheading">Check your progress in each section below. Once you submit, you cannot change your answers.</p>
+
+      <div id="review-summary" class="review-summary"></div>
+
+      <p class="mt-4"><strong>Total answered:</strong> <span id="review-total-answered"></span></p>
+      <p id="review-warning" class="notice-box notice-warning hidden mt-2"></p>
+
+      <div class="flex flex-wrap gap-3 mt-6">
+        <button id="btn-review-back" type="button" class="btn btn-secondary"><i class="fa-solid fa-arrow-left mr-2"></i>Back to Test</button>
+        <button id="btn-final-submit" type="button" class="btn btn-success btn-large"><i class="fa-solid fa-paper-plane mr-2"></i>Submit Final Answers</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= RESULTS SCREEN ============================================================= -->
+  <section id="screen-results" class="app-screen hidden">
+    <div id="results-printable" class="card results-card">
+
+      <div class="results-header">
+        <div>
+          <h2 class="section-heading"><i class="fa-solid fa-square-poll-vertical mr-2"></i>Diagnostic Test Results</h2>
+          <p class="section-subheading">Report generated on <span id="result-date"></span></p>
+        </div>
+        <div class="no-print flex gap-3">
+          <button id="btn-print" class="btn btn-primary"><i class="fa-solid fa-file-pdf mr-2"></i>Print / Save as PDF</button>
+          <button id="btn-restart" class="btn btn-secondary"><i class="fa-solid fa-rotate-left mr-2"></i>Restart Test</button>
+        </div>
+      </div>
+
+      <p id="api-submit-status" class="api-status hidden no-print"></p>
+
+      <div class="student-summary-grid">
+        <p><strong>Name:</strong> <span id="result-student-name"></span></p>
+        <p><strong>Age:</strong> <span id="result-student-age"></span></p>
+        <p><strong>Location:</strong> <span id="result-student-location"></span></p>
+        <p><strong>Email:</strong> <span id="result-student-email"></span></p>
+      </div>
+
+      <div class="overall-score-box">
+        <div>
+          <p class="overall-score-label">Overall Score</p>
+          <p class="overall-score-value"><span id="result-overall-score"></span> <span class="text-slate-400 text-lg">(<span id="result-overall-pct"></span>)</span></p>
+        </div>
+        <span id="result-overall-band" class="badge"></span>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-box"><canvas id="chart-score-by-section"></canvas></div>
+        <div class="chart-box"><canvas id="chart-self-vs-actual"></canvas></div>
+      </div>
+
+      <h3 class="subsection-heading"><i class="fa-solid fa-table-list mr-2"></i>Score by Section</h3>
+      <div class="table-wrap">
+        <table class="result-table">
+          <thead><tr><th>Section</th><th>Score</th><th>%</th><th>Level</th></tr></thead>
+          <tbody id="result-section-table-body"></tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-heading"><i class="fa-solid fa-layer-group mr-2"></i>Per-Tool Skill Tier</h3>
+      <p class="section-subheading">Each tool is judged independently. A high score in one tool does <strong>not</strong> imply mastery of another — only a "Mastery" tier (≥85%) suggests it's safe to skip that tool's fundamentals entirely.</p>
+      <div id="tool-tier-grid" class="tool-tier-grid"></div>
+
+      <div class="recommendation-box">
+        <h3 class="subsection-heading"><i class="fa-solid fa-map-signs mr-2"></i>Suggested Cohort Starting Focus</h3>
+        <p class="recommendation-start">Primary focus: <strong id="result-recommendation-start"></strong></p>
+        <p id="result-recommendation-rationale" class="recommendation-rationale"></p>
+        <div id="result-recommendation-notes-wrap" class="hidden">
+          <p class="font-semibold mt-3 mb-1">Additional notes:</p>
+          <ul id="result-recommendation-notes" class="recommendation-notes-list"></ul>
+        </div>
+      </div>
+
+      <h3 class="subsection-heading mt-8"><i class="fa-solid fa-list-check mr-2"></i>Full Answer Review</h3>
+      <p class="section-subheading">Every question, your answer, and the correct answer (for post-test learning).</p>
+      <div id="answer-review-container"></div>
+
+      <p class="footer-note no-print">Once you're happy with this report, click "Print / Save as PDF" above, then share the saved PDF with your instructor.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer no-print">
+  <p>Data Analytics Program &middot; Diagnostic Placement Test &middot; Built for students ages 10–20</p>
+</footer>
+
+<script src="js/questions.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
