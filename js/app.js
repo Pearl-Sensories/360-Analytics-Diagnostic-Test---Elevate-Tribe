@@ -496,11 +496,11 @@ async function submitResultsToApi(results, recommendation) {
   };
 
   try {
-const response = await fetch("https://script.google.com/macros/s/AKfycbxG0N76ETloMA82JhA5RiOGoKUBx04WkdC3cZ_LskOj74IsH6Ia6oZyNzXBgIPc-nVa/exec", {
+const response = await fetch("https://script.google.com/macros/s/AKfycbxAbq9dKkQCPueU2jgvDX0GU2gYS_HwKUIG3-ipiFE2oK3pwFkMD_vYO5JuA-NiXcl2/exec", {
     method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
+   headers: {
+    "Content-Type": "text/plain"
+},
     body: JSON.stringify(payload)
 });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
