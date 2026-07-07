@@ -496,7 +496,7 @@ async function submitResultsToApi(results, recommendation) {
   };
 
   try {
-const response = await fetch("https://script.google.com/macros/s/AKfycbxAbq9dKkQCPueU2jgvDX0GU2gYS_HwKUIG3-ipiFE2oK3pwFkMD_vYO5JuA-NiXcl2/exec", {
+const response = await fetch("https://script.google.com/macros/s/AKfycbzXQIdatjWAaxVqNMxjIPtQzD8s92ks8JQGAvM5bT2wc7FcEEbLZmqS1q5Kzg8vEnsPwg/exec", {
     method: "POST",
    headers: {
     "Content-Type": "text/plain"
